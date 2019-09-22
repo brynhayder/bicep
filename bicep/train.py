@@ -32,7 +32,7 @@ class Trainer:
         """
         self.hooks.append((hook, freq))
 
-    def _train_step(self, model, optimiser, data, target):
+    def step(self, model, optimiser, data, target):
         """Take one training step for one batch
 
         Args:
@@ -85,7 +85,7 @@ class Trainer:
                 for data, target in self.dataloader:
                     data = data.to(device)
                     target = target.to(device)
-                    loss, outputs = self._train_step(
+                    loss, outputs = self.step(
                             model=model,
                             optimiser=optimiser,
                             data=data,
