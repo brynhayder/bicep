@@ -8,9 +8,9 @@ import torch.nn.functional as F
 from torch.optim import Adam
 from torchvision import datasets, transforms
 
-from bicep import Trainer, evaluate
+from bicep import train, evaluate
 from bicep import hooks
-from bicep.utils import n_correct
+from bicep.metrics import n_correct
 
 
 class Net(nn.Module):
@@ -85,7 +85,7 @@ def cmd_args():
     return parser.parse_args()
 
 
-def get_dataloader(train, batch_size, kwds):
+def make_dataloader(train, batch_size, kwds):
     def flatten(x):
         return torch.flatten(x, start_dim=1).squeeze()
 
@@ -103,6 +103,7 @@ def get_dataloader(train, batch_size, kwds):
             shuffle=True,
             **kwds
         )
+
 
 def init_weights(module):
     if isinstance(module, torch.nn.Linear) or isinstance(module, torch.nn.Conv2d):
@@ -124,13 +125,13 @@ if __name__ == "__main__":
             if use_cuda else {}
             )
 
-    train_loader = get_dataloader(
+    train_loader = make_dataloader(
             train=True,
             batch_size=args.batch_size,
             kwds=dataloader_kwds
         )
     
-    test_loader = get_dataloader(
+    test_loader = make_dataloader(
             train=False,
             batch_size=args.test_batch_size,
             kwds=dataloader_kwds
@@ -153,21 +154,18 @@ if __name__ == "__main__":
                     pbar_kwds=dict(total=args.train_iters)
             )
 
-    train = Trainer(
-            train_loader,
+    train(
+            model=model,
+            dataloader=train_loader,
             loss_func=loss_func,
+            optimiser=optimiser,
+            niters=args.train_iters,
+            device=device,
             hooks=[
                 (train_loss, 10),
                 (accuracy, 10),
                 (pbar, pbar.update_size)
                 ]
-            )
-    
-    train(
-            model,
-            optimiser,
-            device=device,
-            niters=args.train_iters
         )
 
     print("Train losses: ", train_loss.results())

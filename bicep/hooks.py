@@ -29,6 +29,17 @@ class BaseHook:
  
 
 class Recorder(BaseHook):
+    # possible choices for 'name'
+    # trainer
+    # model
+    # device
+    # niters
+    # iter
+    # epoch
+    # data
+    # target
+    # loss
+    # model_outputs
     def __init__(self, name):
         super().__init__()
         self.name = name
