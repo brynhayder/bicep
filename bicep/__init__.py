@@ -1,1 +1,1 @@
-from .loops import Trainer, evaluate
+from .loops import Trainer, evaluate, train
