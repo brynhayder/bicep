@@ -129,3 +129,19 @@ class ProgressBar:
         if self.pbar is None:
             self.pbar = self._new_pbar(**self.pbar_kwds)
         self.pbar.update(self.update_size)
+
+
+class ParameterL2(hooks.BaseHook):
+    def __init__(self, initialisation=None):
+        super().__init__()
+        self.initialisation = initialisation if initialisation is not None else {}
+
+    def __call__(self, state):
+        self._results.append(
+                torch.sqrt(
+                    sum(torch.pow(p - self.initialisation.get(n, 0), 2).sum()
+                        for n, p in state.model.named_parameters())
+                    ).item()
+                )
+
+
