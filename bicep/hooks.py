@@ -64,6 +64,7 @@ class ClassificationAccuracy(BaseHook):
 
 class ClassifierTester(BaseHook):
     def __init__(self, dataloader, loss_func):
+        super().__init__()
         self.dataloader = dataloader
         self.loss_func = loss_func
 
