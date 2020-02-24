@@ -131,7 +131,7 @@ class ProgressBar:
         self.pbar.update(self.update_size)
 
 
-class ParameterL2(hooks.BaseHook):
+class ParameterL2(BaseHook):
     def __init__(self, initialisation=None):
         super().__init__()
         self.initialisation = initialisation if initialisation is not None else {}
