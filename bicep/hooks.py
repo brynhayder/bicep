@@ -1,32 +1,36 @@
 from collections import OrderedDict
+from contextlib import contextmanager
 
 import numpy as np
 from tqdm import tqdm, tqdm_notebook
+import torch
 
 
 """
-Maybe with a metaclass I could intercept the call
-function and add the output to the results cache. 
-Almost certainly overkill!
-
-
 To Do:
-    - Write an MNIST example
     - Write some unit tests?
         - Testing for some of these things could be beneficial if
         you are to use them again.
         Maybe write a few examples first to see what its liek to use
 """
 
-# Make abstract?
-# Is there even a point in this?
+
+@contextmanager
+def eval_mode(model):
+    try:
+        model.eval()
+        yield model
+    finally:
+        model.train()
+
+
 class BaseHook:
     def __init__(self):
         self._results = list()
 
     def results(self):
         return np.array(self._results)
- 
+
 
 class Recorder(BaseHook):
     # possible choices for 'name'
@@ -73,19 +77,20 @@ class ClassifierTester(BaseHook):
 
     # Maybe want something about number of iterations here too?
     def test(self, model, device):
-        test_loss = 0
-        correct = 0
-        n = 0
-        for data, target in self.dataloader:
-            n += len(data)
-            data = data.to(device, non_blocking=True) 
-            target = target.to(device, non_blocking=True)
-            output = model(data)
-            test_loss += self.loss_func(output, target, reduction='sum').item()
-            pred = output.argmax(dim=1, keepdim=True)
-            correct += pred.eq(target.view_as(pred)).sum().item()
+        with eval_mode(model) as model:
+            test_loss = 0
+            correct = 0
+            n = 0
+            for data, target in self.dataloader:
+                n += len(data)
+                data = data.to(device, non_blocking=True) 
+                target = target.to(device, non_blocking=True)
+                output = model(data)
+                test_loss += self.loss_func(output, target, reduction='sum').item()
+                pred = output.argmax(dim=1, keepdim=True)
+                correct += pred.eq(target.view_as(pred)).sum().item()
 
-        self._results.append((test_loss / n, correct / n))
+            self._results.append((test_loss / n, correct / n))
 
 
 # If generalised to various stopping 
@@ -137,6 +142,7 @@ class ParameterL2(BaseHook):
         self.initialisation = initialisation if initialisation is not None else {}
 
     def __call__(self, state):
+        ## Can just use torch.pow(torch.norm here...
         self._results.append(
                 torch.sqrt(
                     sum(torch.pow(p - self.initialisation.get(n, 0), 2).sum()

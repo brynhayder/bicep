@@ -92,16 +92,12 @@ class Trainer:
                             state.loss = loss
                             state.model_outputs = outputs
                             
-                            model.eval()
-                            with torch.no_grad():
-                                for hook in hooks_to_exec:
-                                    hook(state)
+                            for hook in hooks_to_exec:
+                                hook(state)
 
                             state.data = None
                             state.target = None
                             state.outputs = None
-
-                            model.train()
 
                         i += 1
                         if i == niters:
