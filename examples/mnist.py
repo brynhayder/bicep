@@ -151,7 +151,10 @@ if __name__ == "__main__":
     pbar = hooks.ProgressBar(
                     update_size=10,
                     notebook=False,
-                    pbar_kwds=dict(total=args.train_iters)
+                    pbar_kwds=dict(
+                        total=args.train_iters,
+                        desc="Training"
+                    )
             )
 
     train(
@@ -168,8 +171,8 @@ if __name__ == "__main__":
                 ]
         )
 
-    print("Train losses: ", train_loss.results())
-    print("Train accuracies: ", accuracy.results())
+    print("Train losses: ", train_loss.numpy())
+    print("Train accuracies: ", accuracy.numpy())
     
     test_results = evaluate(
             model,
@@ -179,6 +182,6 @@ if __name__ == "__main__":
                 lambda m, d, t, mo: n_correct(mo, t)
                 ],
             device=device
-            )
+        )
     print("Test results: ", test_results)
 

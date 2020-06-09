@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="bicep",
-    version="0.0.1",
+    version="1.0.1",
     author="brynhayder",
     description="Tools for training PyTorch models",
     long_description=long_description,

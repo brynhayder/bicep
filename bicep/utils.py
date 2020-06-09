@@ -1,5 +1,3 @@
-from types import SimpleNamespace
-
 # Write docs, test, see if this needs more
 class Registry:
     def __init__(self):
