@@ -97,7 +97,8 @@ class Trainer:
 
                             state.data = None
                             state.target = None
-                            state.outputs = None
+                            state.loss = None
+                            state.model_outputs = None
 
                         i += 1
                         if i == niters:
