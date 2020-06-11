@@ -2,12 +2,6 @@ import pytest
 
 from bicep import hooks
 
-def test_base_hook():
-    class Hook(hooks.BaseHook):
-        def results():
-            pass
-    Hook()
-
 
 @pytest.mark.parametrize(
         'name', 

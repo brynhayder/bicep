@@ -1,3 +1,8 @@
+import random
+
+import numpy as np
+import torch
+
 # Write docs, test, see if this needs more
 class Registry:
     def __init__(self):
@@ -12,7 +17,7 @@ class Registry:
             return thing
         return add
 
-
+# This should probably be somewhere else
 def evaluate(model, dataloader, metrics, device):
         outputs = list()
         for data, target in dataloader:
@@ -27,12 +32,48 @@ def evaluate(model, dataloader, metrics, device):
         return outputs
 
 
+# This should probably be somewhere else
 def n_correct(logits, target):
         pred = logits.argmax(dim=1, keepdim=True)
         # Need to call .item() before the division to python casts to float
         # otherwise pytorch does integer division.
         return pred.eq(target.view_as(pred)).sum().item()
        
+
+def reproducible(s=None):
+    """reproducible
+    Run PyTorch in reproducible mode, with optional seeding of random
+    number generators.
+
+
+    Args:
+        s (Optional[int]): optional seeding of random number generators using
+        `seed`.
+
+    Notes:
+     - See https://pytorch.org/docs/stable/notes/randomness.html
+    """
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    if s is not None:
+        seed(s)
+
+
+def seed(s):
+    """seed
+    Seed everything: Python random number generator, numpy random number generator,
+    torch and torch cuda generators too.
+
+    Args:
+        s (int): The value of the seed
+    """
+    # It's not clear that this line can do anything
+    # env vars normally set _before_ interpreter loaded
+    # os.environ['PYTHONHASHSEED'] = str(s)
+    random.seed(s)
+    np.random.seed(s)
+    torch.manual_seed(s)
+    torch.cuda.manual_seed_all(s)
 
 # def evaluate(model, dataloader, hooks, device):
         # for data, target in dataloader:
