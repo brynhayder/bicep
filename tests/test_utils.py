@@ -38,7 +38,7 @@ TEST_RANDOM_SEED = 2020
 
 
 @pytest.fixture()
-def setup_reproducible():
+def setup_set_reproducible():
     start_det = torch.backends.cudnn.deterministic
     start_bench = torch.backends.cudnn.benchmark
     yield
@@ -46,7 +46,7 @@ def setup_reproducible():
     torch.backends.cudnn.benchmarki = start_bench 
 
 
-def test_reproducible(setup_reproducible):
-    utils.reproducible()
+def test_set_reproducible(setup_set_reproducible):
+    utils.set_reproducible()
     assert torch.backends.cudnn.deterministic == True
     assert torch.backends.cudnn.benchmark == False

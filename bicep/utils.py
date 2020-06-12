@@ -40,8 +40,8 @@ def n_correct(logits, target):
         return pred.eq(target.view_as(pred)).sum().item()
        
 
-def reproducible(s=None):
-    """reproducible
+def set_reproducible(s=None):
+    """set_reproducible
     Run PyTorch in reproducible mode, with optional seeding of random
     number generators.
 
