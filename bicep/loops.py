@@ -19,7 +19,7 @@ class Trainer:
         """
         self.loss_func = loss_func
         self.dataloader = dataloader
-  
+
     def step(self, model, optimiser, data, target):
         """Take one training step for one batch
 
@@ -35,11 +35,11 @@ class Trainer:
         """
         optimiser.zero_grad()
         output = model(data)
-        loss = self.loss_func(output, target, reduction='mean')
+        loss = self.loss_func(output, target, reduction="mean")
         loss.backward()
         optimiser.step()
         return loss.item(), output
-    
+
     def __call__(self, model, optimiser, niters, device, hooks=None):
         """Train the `model` on `device` for `niters`.
 
@@ -52,18 +52,18 @@ class Trainer:
         Returns:
         """
         state = SimpleNamespace(
-                trainer=self,
-                model=model,
-                device=device,
-                niters=niters,
-                iter=0,
-                epoch=0,
-                data=None,
-                target=None,
-                loss=None,
-                model_outputs=None
-            )
-        
+            trainer=self,
+            model=model,
+            device=device,
+            niters=niters,
+            iter=0,
+            epoch=0,
+            data=None,
+            target=None,
+            loss=None,
+            model_outputs=None,
+        )
+
         try:
             model.train()
             i = 0
@@ -74,15 +74,12 @@ class Trainer:
                     data = data.to(device)
                     target = target.to(device)
                     loss, outputs = self.step(
-                            model=model,
-                            optimiser=optimiser,
-                            data=data,
-                            target=target
-                        )
+                        model=model, optimiser=optimiser, data=data, target=target
+                    )
                     if hooks is not None:
                         hooks_to_exec = tuple(
-                                hook for hook, freq in hooks if i % freq == 0
-                            )
+                            hook for hook, freq in hooks if i % freq == 0
+                        )
 
                         if hooks_to_exec:
                             state.iter = i
@@ -91,7 +88,7 @@ class Trainer:
                             state.epoch = epoch
                             state.loss = loss
                             state.model_outputs = outputs
-                            
+
                             for hook in hooks_to_exec:
                                 hook(state)
 
@@ -121,30 +118,16 @@ def train(model, dataloader, loss_func, optimiser, niters, device, hooks=None):
 
     Returns:
     """
-    return Trainer(
-            dataloader=dataloader,
-            loss_func=loss_func
-            )(
-            model=model,
-            optimiser=optimiser,
-            niters=niters,
-            device=device,
-            hooks=hooks
-        )
+    return Trainer(dataloader=dataloader, loss_func=loss_func)(
+        model=model, optimiser=optimiser, niters=niters, device=device, hooks=hooks
+    )
 
 
 def evaluate(model, dataloader, metrics, device):
-        outputs = list()
-        for data, target in dataloader:
-            data = data.to(device)
-            target = target.to(device)
-            model_outputs = model(data)
-            outputs.append(
-                    tuple(
-                        m(model, data, target, model_outputs) for m in metrics
-                        )
-                    )
-        return outputs
-
-
-
+    outputs = list()
+    for data, target in dataloader:
+        data = data.to(device)
+        target = target.to(device)
+        model_outputs = model(data)
+        outputs.append(tuple(m(model, data, target, model_outputs) for m in metrics))
+    return outputs

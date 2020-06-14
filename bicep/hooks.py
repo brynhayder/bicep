@@ -23,6 +23,15 @@ def eval_mode(model):
         model.train()
 
 
+# test and document this
+# def hookify(**signature):
+# def make_hook(func):
+# def hook(state):
+# return func(**{name: getattr(state, param) for name, param in signature.items()})
+# return hook
+# return make_hook
+
+
 class Recorder:
     def __init__(self, name, detach=False, cpu=False):
         """Recorder
@@ -77,7 +86,9 @@ class ClassificationAccuracy:
         pred = state.model_outputs.detach().cpu().argmax(dim=1, keepdim=True)
         # Need to call .item() before the division to python casts to float
         # otherwise pytorch does integer division.
-        acc = pred.eq(state.target.detach().cpu().view_as(pred)).sum().item() / len(state.data)
+        acc = pred.eq(state.target.detach().cpu().view_as(pred)).sum().item() / len(
+            state.data
+        )
         self.results.append(acc)
 
 

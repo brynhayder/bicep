@@ -7,38 +7,36 @@ import torch
 class Registry:
     def __init__(self):
         self._register = dict()
-    
+
     def __getitem__(self, key):
         return self._register[key]
-    
+
     def __call__(self, name):
         def add(thing):
             self._register[name] = thing
             return thing
+
         return add
+
 
 # This should probably be somewhere else
 def evaluate(model, dataloader, metrics, device):
-        outputs = list()
-        for data, target in dataloader:
-            data = data.to(device)
-            target = target.to(device)
-            model_outputs = model(data)
-            outputs.append(
-                    tuple(
-                        m(model, data, target, model_outputs) for m in metrics
-                        )
-                    )
-        return outputs
+    outputs = list()
+    for data, target in dataloader:
+        data = data.to(device)
+        target = target.to(device)
+        model_outputs = model(data)
+        outputs.append(tuple(m(model, data, target, model_outputs) for m in metrics))
+    return outputs
 
 
 # This should probably be somewhere else
 def n_correct(logits, target):
-        pred = logits.argmax(dim=1, keepdim=True)
-        # Need to call .item() before the division to python casts to float
-        # otherwise pytorch does integer division.
-        return pred.eq(target.view_as(pred)).sum().item()
-       
+    pred = logits.argmax(dim=1, keepdim=True)
+    # Need to call .item() before the division to python casts to float
+    # otherwise pytorch does integer division.
+    return pred.eq(target.view_as(pred)).sum().item()
+
 
 def set_reproducible(s=None):
     """set_reproducible
@@ -75,16 +73,17 @@ def seed(s):
     torch.manual_seed(s)
     torch.cuda.manual_seed_all(s)
 
+
 # def evaluate(model, dataloader, hooks, device):
-        # for data, target in dataloader:
-            # data = data.to(device)
-            # target = target.to(device)
-            # model_outputs = model(data)
-            # state = SimpleNamespace(
-                    # data=data,
-                    # target=target,
-                    # model=model,
-                    # model_outputs=model_outputs
-                # )
-            # for hook in hooks:
-                # hook(state)
+# for data, target in dataloader:
+# data = data.to(device)
+# target = target.to(device)
+# model_outputs = model(data)
+# state = SimpleNamespace(
+# data=data,
+# target=target,
+# model=model,
+# model_outputs=model_outputs
+# )
+# for hook in hooks:
+# hook(state)

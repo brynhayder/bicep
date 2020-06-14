@@ -17,12 +17,12 @@ class Net(nn.Module):
     def __init__(self):
         super().__init__()
         self.classifier = nn.Sequential(
-                nn.Linear(28 * 28, 300),
-                nn.ReLU(inplace=True),
-                nn.Linear(300, 100),
-                nn.ReLU(inplace=True),
-                nn.Linear(100, 10)
-            )
+            nn.Linear(28 * 28, 300),
+            nn.ReLU(inplace=True),
+            nn.Linear(300, 100),
+            nn.ReLU(inplace=True),
+            nn.Linear(100, 10),
+        )
 
     def forward(self, x):
         return self.classifier(x)
@@ -30,58 +30,54 @@ class Net(nn.Module):
 
 def cmd_args():
     parser = ArgumentParser("MNIST Example with bicep")
-    parser = ArgumentParser(description='PyTorch MNIST Example')
+    parser = ArgumentParser(description="PyTorch MNIST Example")
     parser.add_argument(
-            '--train-iters',
-            type=int,
-            default=1000,
-            help="Number of batch iterations to train for. (default: %(default)d)"
-        )
+        "--train-iters",
+        type=int,
+        default=1000,
+        help="Number of batch iterations to train for. (default: %(default)d)",
+    )
 
     parser.add_argument(
-            '--batch-size',
-            type=int,
-            default=64,
-            metavar='N',
-            help='Input batch size for training (default: %(default)d)'
-        )
+        "--batch-size",
+        type=int,
+        default=64,
+        metavar="N",
+        help="Input batch size for training (default: %(default)d)",
+    )
 
     parser.add_argument(
-            '--test-batch-size',
-            type=int,
-            default=1000,
-            metavar='N',
-            help='Input batch size for testing (default: %(default)d)'
-        )
+        "--test-batch-size",
+        type=int,
+        default=1000,
+        metavar="N",
+        help="Input batch size for testing (default: %(default)d)",
+    )
 
     parser.add_argument(
-            '--lr',
-            type=float,
-            default=1.2e-3,
-            metavar='LR',
-            help='Learning rate (default: %(default)f'
-        )
+        "--lr",
+        type=float,
+        default=1.2e-3,
+        metavar="LR",
+        help="Learning rate (default: %(default)f",
+    )
+
+    parser.add_argument("--no-cuda", action="store_true", help="Disables CUDA training")
 
     parser.add_argument(
-            '--no-cuda',
-            action='store_true',
-            help='Disables CUDA training'
-        )
+        "--seed",
+        type=int,
+        default=1,
+        metavar="S",
+        help="random seed (default: %(default)d)",
+    )
 
     parser.add_argument(
-            '--seed',
-            type=int,
-            default=1,
-            metavar='S',
-            help='random seed (default: %(default)d)'
-        )
-
-    parser.add_argument(
-            '--num-workers',
-            type=int,
-            default=1,
-            help="Number of dataloader workers. (default %(default)d"
-        )
+        "--num-workers",
+        type=int,
+        default=1,
+        help="Number of dataloader workers. (default %(default)d",
+    )
     return parser.parse_args()
 
 
@@ -90,19 +86,22 @@ def make_dataloader(train, batch_size, kwds):
         return torch.flatten(x, start_dim=1).squeeze()
 
     return torch.utils.data.DataLoader(
-            datasets.MNIST(
-                os.environ['TORCH_DATA'],
-                train=train,
-                download=True,
-                transform=transforms.Compose([
-                           transforms.ToTensor(),
-                           transforms.Normalize((0.1307,), (0.3081,)),
-                           transforms.Lambda(flatten),
-                       ])),
-            batch_size=batch_size,
-            shuffle=True,
-            **kwds
-        )
+        datasets.MNIST(
+            os.environ["TORCH_DATA"],
+            train=train,
+            download=True,
+            transform=transforms.Compose(
+                [
+                    transforms.ToTensor(),
+                    transforms.Normalize((0.1307,), (0.3081,)),
+                    transforms.Lambda(flatten),
+                ]
+            ),
+        ),
+        batch_size=batch_size,
+        shuffle=True,
+        **kwds
+    )
 
 
 def init_weights(module):
@@ -121,67 +120,51 @@ if __name__ == "__main__":
     device = torch.device("cuda" if use_cuda else "cpu")
 
     dataloader_kwds = (
-            {'num_workers': args.num_workers, 'pin_memory': True}
-            if use_cuda else {}
-            )
+        {"num_workers": args.num_workers, "pin_memory": True} if use_cuda else {}
+    )
 
     train_loader = make_dataloader(
-            train=True,
-            batch_size=args.batch_size,
-            kwds=dataloader_kwds
-        )
-    
+        train=True, batch_size=args.batch_size, kwds=dataloader_kwds
+    )
+
     test_loader = make_dataloader(
-            train=False,
-            batch_size=args.test_batch_size,
-            kwds=dataloader_kwds
-            )
-    
+        train=False, batch_size=args.test_batch_size, kwds=dataloader_kwds
+    )
+
     model = Net().to(device)
     model.apply(init_weights)
 
-    optimiser = Adam(
-            model.parameters(),
-            lr=1.2e-3
-        )
-    
+    optimiser = Adam(model.parameters(), lr=1.2e-3)
+
     loss_func = F.cross_entropy
     accuracy = hooks.ClassificationAccuracy()
-    train_loss = hooks.Recorder('loss')
+    train_loss = hooks.Recorder("loss")
     pbar = hooks.ProgressBar(
-                    update_size=10,
-                    notebook=False,
-                    pbar_kwds=dict(
-                        total=args.train_iters,
-                        desc="Training"
-                    )
-            )
+        update_size=10,
+        notebook=False,
+        pbar_kwds=dict(total=args.train_iters, desc="Training"),
+    )
 
     train(
-            model=model,
-            dataloader=train_loader,
-            loss_func=loss_func,
-            optimiser=optimiser,
-            niters=args.train_iters,
-            device=device,
-            hooks=[
-                (train_loss, 10),
-                (accuracy, 10),
-                (pbar, pbar.update_size)
-                ]
-        )
+        model=model,
+        dataloader=train_loader,
+        loss_func=loss_func,
+        optimiser=optimiser,
+        niters=args.train_iters,
+        device=device,
+        hooks=[(train_loss, 10), (accuracy, 10), (pbar, pbar.update_size)],
+    )
 
     print("Train losses: ", train_loss.numpy())
     print("Train accuracies: ", accuracy.numpy())
-    
-    test_results = evaluate(
-            model,
-            test_loader,
-            metrics=[
-                lambda m, d, t, mo: loss_func(mo, t, reduction='sum').item(),
-                lambda m, d, t, mo: n_correct(mo, t)
-                ],
-            device=device
-        )
-    print("Test results: ", test_results)
 
+    test_results = evaluate(
+        model,
+        test_loader,
+        metrics=[
+            lambda m, d, t, mo: loss_func(mo, t, reduction="sum").item(),
+            lambda m, d, t, mo: n_correct(mo, t),
+        ],
+        device=device,
+    )
+    print("Test results: ", test_results)
